@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django_et_tracking',
-    version='0.0.5',
+    version='0.0.6',
     description='Exact Target reporting',
     author='JBA',
     author_email='lex@jbadigital.com',
