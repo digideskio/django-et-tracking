@@ -40,7 +40,7 @@ class SendJobManager(UniqueBySendIDManager):
             ,MAX(event_info = 'Soft Bounce') AS soft_bounced
             ,MAX(event_info = 'Block Bounce') AS block_bounced
             ,1 - MAX(EventType = 'Bounce') AS delivered
-            ,MAX(event_info = 'Conversion') AS converted
+            ,MAX(EventType = 'Conversion') AS converted
 
             FROM et_event
             WHERE SendID IN {}
