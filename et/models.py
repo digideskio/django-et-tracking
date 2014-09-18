@@ -10,16 +10,6 @@ def chunker(seq, size):
     return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
 
 
-class UniqueBySendIDManager(models.Manager):
-    def populate_from_df(self, df):
-        self._populate_from_df_remove_old(df, 'SendID')
-
-
-class UniqueByListIDManager(models.Manager):
-    def populate_from_df(self, df):
-        self._populate_from_df_remove_old(df, 'ListID')
-
-
 class UniqueByXManager(models.Manager):
     def _populate_from_df_remove_old(self, df, unique_element):
         ids = set(df[unique_element])
@@ -27,6 +17,16 @@ class UniqueByXManager(models.Manager):
         old_records = self.filter(**kwargs)
         old_records.delete()
         plp.to_django(df, self.model)
+
+
+class UniqueBySendIDManager(UniqueByXManager):
+    def populate_from_df(self, df):
+        self._populate_from_df_remove_old(df, 'SendID')
+
+
+class UniqueByListIDManager(UniqueByXManager):
+    def populate_from_df(self, df):
+        self._populate_from_df_remove_old(df, 'ListID')
 
 
 class SendJobManager(UniqueBySendIDManager):
