@@ -5,6 +5,7 @@ import tempfile
 import zipfile
 
 from .models import Event
+from .models import List
 from .models import SendJob
 
 
@@ -21,15 +22,26 @@ class DataExtractZipfile:
         send_job = self.get_event_csv('SendJobs')
         return send_job
 
+    def get_list_csv(self):
+        lists = self.get_event_csv('Lists')
+        return lists
+
+    def has_csv(self, csv_name):
+        return csv_name in self.get_csv_names()
+
     def get_event_csvs(self):
         csvs = []
-        with zipfile.ZipFile(self.filename, 'r') as zf:
-            csv_names = [n for n in zf.namelist() if n != 'SendJobs.csv']
+        csv_names = [n for n in self.get_csv_names
+                     if n not in ('SendJobs.csv', 'Lists.csv')]
         csv_types = [x.split('.csv')[0] for x in csv_names]
         for csv_type in csv_types:
             csv = self.get_event_csv(csv_type)
             csvs.append(csv)
         return csvs
+
+    def get_csv_names(self):
+        with zipfile.ZipFile(self.filename, 'r') as zf:
+            return zf.namelist()
 
     def get_event_csv(self, csv_type):
         source_csv_filename = csv_type + '.csv'
@@ -38,6 +50,8 @@ class DataExtractZipfile:
             zf.extract(source_csv_filename, self.extract_path)
             if csv_type == 'SendJobs':
                 csv = SendJobCSV(temp_csv)
+            elif csv_type == 'Lists':
+                csv = ListCSV(temp_csv)
             else:
                 csv = EventCSV.factory(temp_csv, csv_type)
         return csv
@@ -46,6 +60,12 @@ class DataExtractZipfile:
         send_job = self.get_sendjob_csv()
         send_job.etl()
         send_job.delete_file()
+
+        # may or may not be included.
+        if self.has_csv('Lists.csv'):
+            csv = self.get_list_csv()
+            csv.etl()
+            csv.delete_file()
 
         for csv in self.get_event_csvs():
             csv.etl()
@@ -69,6 +89,27 @@ class SendJobCSV(etl.DataSet):
     def transform(self):
         self.data['dependent_reports_up_to_date'] = False
         self.data['underlying_data_exists'] = False
+        return self.data
+
+    def validate(self):
+        pass
+
+
+class ListCSV(etl.DataSet):
+    def __init__(self, fname):
+        self.fname = fname
+
+    def extract(self):
+        kwargs = {
+            'parse_dates': ['DateCreated'],
+        }
+        self.data = pd.read_csv(self.fname, **kwargs)
+
+    def load(self):
+        if len(self.data):
+            List.objects.populate_from_df(self.data)
+
+    def transform(self):
         return self.data
 
     def validate(self):

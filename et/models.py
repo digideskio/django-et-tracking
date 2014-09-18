@@ -12,8 +12,19 @@ def chunker(seq, size):
 
 class UniqueBySendIDManager(models.Manager):
     def populate_from_df(self, df):
-        send_ids = set(df['SendID'])
-        old_records = self.filter(SendID__in=send_ids)
+        self._populate_from_df_remove_old(df, 'SendID')
+
+
+class UniqueByListIDManager(models.Manager):
+    def populate_from_df(self, df):
+        self._populate_from_df_remove_old(df, 'ListID')
+
+
+class UniqueByXManager(models.Manager):
+    def _populate_from_df_remove_old(self, df, unique_element):
+        ids = set(df[unique_element])
+        kwargs = {'{}__in'.format(unique_element): ids}
+        old_records = self.filter(**kwargs)
         old_records.delete()
         plp.to_django(df, self.model)
 
@@ -205,3 +216,15 @@ class ReceiverReport(models.Model):
     block_bounced = models.BooleanField()
     delivered = models.BooleanField()
     converted = models.BooleanField()
+
+
+class List(models.Model):
+    objects = UniqueByListIDManager()
+
+    ClientID = models.IntegerField()
+    ListID = models.IntegerField(db_index=True)
+    Name = models.CharField(max_length=100)
+    Description = models.CharField(max_length=100)
+    DateCreated = models.DateTimeField()
+    Status = models.CharField(max_length=20)
+    ListType = models.CharField(max_length=20)
