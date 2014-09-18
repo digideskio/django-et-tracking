@@ -31,7 +31,7 @@ class DataExtractZipfile:
 
     def get_event_csvs(self):
         csvs = []
-        csv_names = [n for n in self.get_csv_names
+        csv_names = [n for n in self.get_csv_names()
                      if n not in ('SendJobs.csv', 'Lists.csv')]
         csv_types = [x.split('.csv')[0] for x in csv_names]
         for csv_type in csv_types:
