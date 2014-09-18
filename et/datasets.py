@@ -80,7 +80,7 @@ class SendJobCSV(etl.DataSet):
         kwargs = {
             'parse_dates': ['SchedTime', 'SentTime'],
         }
-        self.data = pd.read_csv(self.fname, error_bad_lines=False, **kwargs)
+        self.data = pd.read_csv(self.fname, **kwargs)
 
     def load(self):
         if len(self.data):
@@ -103,7 +103,7 @@ class ListCSV(etl.DataSet):
         kwargs = {
             'parse_dates': ['DateCreated'],
         }
-        self.data = pd.read_csv(self.fname, **kwargs)
+        self.data = pd.read_csv(self.fname, error_bad_lines=False, **kwargs)
 
     def load(self):
         if len(self.data):
