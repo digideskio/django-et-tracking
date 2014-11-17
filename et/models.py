@@ -149,10 +149,10 @@ class Event(models.Model):
 
     ClientID = models.IntegerField()
     SendID = models.IntegerField(db_index=True)
-    SubscriberKey = models.CharField(max_length=100)
+    SubscriberKey = models.CharField(max_length=100, db_index=True)
     EmailAddress = models.CharField(max_length=100)
     SubscriberID = models.IntegerField()
-    ListID = models.IntegerField()
+    ListID = models.IntegerField(db_index=True)
     EventDate = models.DateTimeField(db_index=True)
     # length of BounceCategory??
     EventType = models.CharField(max_length=50, db_index=True)
